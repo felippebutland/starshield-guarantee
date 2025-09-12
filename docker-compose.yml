@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # MongoDB Database Service
+  mongodb:
+    image: mongo:7.0
+    container_name: starshield-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
+      MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-starshield-guarantee}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - starshield-network
+
+  # NestJS Application Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: starshield-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Database Configuration
+      DATABASE_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/${MONGO_DB_NAME:-starshield-guarantee}?authSource=admin
+
+      # Application Configuration
+      PORT: 3000
+      NODE_ENV: ${NODE_ENV:-production}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
+
+      # Gmail API Configuration (Optional)
+      GMAIL_CLIENT_ID: ${GMAIL_CLIENT_ID:-}
+      GMAIL_CLIENT_SECRET: ${GMAIL_CLIENT_SECRET:-}
+      GMAIL_REFRESH_TOKEN: ${GMAIL_REFRESH_TOKEN:-}
+      GMAIL_USER: ${GMAIL_USER:-}
+
+      # SMTP Fallback Configuration (Optional)
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+    depends_on:
+      - mongodb
+    networks:
+      - starshield-network
+    volumes:
+      - ./logs:/app/logs
+
+# Named Volumes
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+
+# Networks
+networks:
+  starshield-network:
+    driver: bridge
