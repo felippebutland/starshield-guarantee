@@ -5,14 +5,14 @@ const testDeviceRegistration = async () => {
   console.log('🧪 Testing Device Registration with Email...\n');
 
   const deviceData = {
-    imei: '123456789012345',
-    fiscalNumber: 'NF123456789',
+    imei: '1234567890123451',
+    fiscalNumber: 'NF1234561789',
     model: 'iPhone 15 Pro',
     brand: 'Apple',
     purchaseDate: '2024-01-15T00:00:00.000Z',
     ownerCpfCnpj: '12345678901',
     ownerName: 'João Silva',
-    ownerEmail: 'joao.silva@email.com',
+    ownerEmail: 'butlandfelippe@gmail.com',
     ownerPhone: '+5511999999999',
     photos: [
       'https://example.com/device-photo1.jpg',

@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Device, DeviceDocument } from '../../schemas/device.schema';
 import {
+  CoverageType,
   Warranty,
   WarrantyDocument,
   WarrantyStatus,
@@ -250,7 +251,6 @@ export class WarrantyService {
       photos,
     } = registrationDto;
 
-    // Check if device already exists
     const existingDevice = await this.deviceModel.findOne({
       $or: [{ imei }, { fiscalNumber }],
       isActive: true,
@@ -293,8 +293,9 @@ export class WarrantyService {
         endDate: warrantyEndDate,
         maxClaims: 2, // Default: 2 claims per year
         usedClaims: 0,
-        coverageType: 'Screen Protection',
+        coverageType: CoverageType.SCREEN_ONLY,
         isActive: true,
+        insuranceProvider: 'starshield',
       });
 
       const savedWarranty = await warranty.save();

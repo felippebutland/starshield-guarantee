@@ -26,7 +26,7 @@ git clone <repository-url>
 cd starshield-guarantee
 
 # Copy environment variables
-cp .env.example .env
+cp .env .env
 ```
 
 ### 2. Configure Environment Variables
@@ -108,7 +108,7 @@ If you prefer to run without Docker:
 npm install
 
 # Set up environment variables
-cp .env.example .env
+cp .env .env
 # Edit .env with your MongoDB connection and email settings
 
 # Build the application

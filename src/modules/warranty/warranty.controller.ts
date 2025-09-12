@@ -63,6 +63,7 @@ export class WarrantyController {
       photos: registerDeviceDto.photos,
     };
 
+
     return await this.warrantyService.registerDevice(
       registrationDto,
       ipAddress,

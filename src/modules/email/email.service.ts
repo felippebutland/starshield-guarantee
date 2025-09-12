@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { google } from 'googleapis';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export interface DeviceRegistrationEmailData {
   ownerName: string;
@@ -15,57 +14,10 @@ export interface DeviceRegistrationEmailData {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
 
   constructor(private configService: ConfigService) {
-    this.initializeGmailTransporter();
-  }
-
-  private async initializeGmailTransporter() {
-    try {
-      const oauth2Client = new google.auth.OAuth2(
-        this.configService.get('GMAIL_CLIENT_ID'),
-        this.configService.get('GMAIL_CLIENT_SECRET'),
-        'https://developers.google.com/oauthplayground',
-      );
-
-      oauth2Client.setCredentials({
-        refresh_token: this.configService.get('GMAIL_REFRESH_TOKEN'),
-      });
-
-      const accessToken = await oauth2Client.getAccessToken();
-
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          type: 'OAuth2',
-          user: this.configService.get('GMAIL_USER'),
-          clientId: this.configService.get('GMAIL_CLIENT_ID'),
-          clientSecret: this.configService.get('GMAIL_CLIENT_SECRET'),
-          refreshToken: this.configService.get('GMAIL_REFRESH_TOKEN'),
-          accessToken: accessToken.token,
-        },
-      });
-
-      this.logger.log('Gmail transporter initialized successfully');
-    } catch (error) {
-      this.logger.error('Failed to initialize Gmail transporter:', error);
-      // Fallback to simple SMTP if Gmail API fails
-      this.initializeFallbackTransporter();
-    }
-  }
-
-  private initializeFallbackTransporter() {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get('SMTP_HOST', 'smtp.gmail.com'),
-      port: this.configService.get('SMTP_PORT', 587),
-      secure: false,
-      auth: {
-        user: this.configService.get('SMTP_USER'),
-        pass: this.configService.get('SMTP_PASS'),
-      },
-    });
-    this.logger.log('Fallback SMTP transporter initialized');
+    this.resend = new Resend(this.configService.get('RESEND_API_KEY'));
   }
 
   async sendDeviceRegistrationEmail(
@@ -74,19 +26,16 @@ export class EmailService {
     try {
       const emailTemplate = this.getDeviceRegistrationEmailTemplate(data);
 
-      const mailOptions = {
-        from: {
-          name: 'StarShield Garantias',
-          address:
-            this.configService.get('GMAIL_USER') ||
-            this.configService.get('SMTP_USER'),
-        },
-        to: data.ownerEmail,
+      const result = await this.resend.emails.send({
+        from: this.configService.get(
+          'RESEND_FROM_EMAIL',
+          'Acme <onboarding@resend.dev>',
+        ),
+        to: [data.ownerEmail],
         subject: 'Dispositivo Registrado com Sucesso - StarShield Garantias',
         html: emailTemplate,
-      };
+      });
 
-      const result = await this.transporter.sendMail(mailOptions);
       this.logger.log(
         `Device registration email sent successfully to ${data.ownerEmail}`,
       );
