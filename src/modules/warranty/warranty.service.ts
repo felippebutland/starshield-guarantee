@@ -22,7 +22,6 @@ import {
 export interface WarrantyValidationDto {
   imei?: string;
   fiscalNumber?: string;
-  model: string;
   ownerCpfCnpj: string;
 }
 
@@ -37,6 +36,7 @@ export interface DeviceRegistrationDto {
   ownerEmail: string;
   ownerPhone: string;
   photos: string[];
+  termsOfUseBase64?: string;
 }
 
 export interface DeviceRegistrationResponse {
@@ -96,7 +96,7 @@ export class WarrantyService {
     validationDto: WarrantyValidationDto,
     ipAddress?: string,
   ): Promise<WarrantyStatusResponse> {
-    const { imei, fiscalNumber, model, ownerCpfCnpj } = validationDto;
+    const { imei, fiscalNumber, ownerCpfCnpj } = validationDto;
 
     if (!imei && !fiscalNumber) {
       throw new BadRequestException(
@@ -105,7 +105,6 @@ export class WarrantyService {
     }
 
     const deviceQuery: any = {
-      model,
       ownerCpfCnpj,
       isActive: true,
     };
@@ -249,6 +248,7 @@ export class WarrantyService {
       ownerEmail,
       ownerPhone,
       photos,
+      termsOfUseBase64,
     } = registrationDto;
 
     const existingDevice = await this.deviceModel.findOne({
@@ -275,23 +275,23 @@ export class WarrantyService {
         ownerEmail,
         ownerPhone,
         photos,
+        termsOfUseBase64,
         isActive: true,
       });
 
       const savedDevice = await device.save();
 
       // Create warranty for the device
-      const warrantyStartDate = new Date();
-      const warrantyEndDate = new Date();
-      warrantyEndDate.setFullYear(warrantyEndDate.getFullYear() + 1); // 1 year warranty
+      const warrantyEndDate = new Date(purchaseDate);
+      warrantyEndDate.setFullYear(purchaseDate.getFullYear() + 1); // 1 year warranty
 
       const warranty = new this.warrantyModel({
         deviceId: savedDevice._id,
         policyNumber: `POL-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
         status: WarrantyStatus.ACTIVE,
-        startDate: warrantyStartDate,
+        startDate: purchaseDate,
         endDate: warrantyEndDate,
-        maxClaims: 2, // Default: 2 claims per year
+        maxClaims: 1, // Default: 2 claims per year
         usedClaims: 0,
         coverageType: CoverageType.SCREEN_ONLY,
         isActive: true,
@@ -320,6 +320,7 @@ export class WarrantyService {
           deviceBrand: brand,
           imei,
           registrationDate: new Date(),
+          policyNumber: warranty.policyNumber,
         };
 
         emailSent =

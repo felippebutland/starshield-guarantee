@@ -4,6 +4,7 @@ import {
   Body,
   Req,
   BadRequestException,
+  Get,
 } from '@nestjs/common';
 import {
   WarrantyService,
@@ -35,7 +36,6 @@ export class WarrantyController {
     const validationDto: WarrantyValidationDto = {
       imei: validateWarrantyDto.imei,
       fiscalNumber: validateWarrantyDto.fiscalNumber,
-      model: validateWarrantyDto.model,
       ownerCpfCnpj: validateWarrantyDto.ownerCpfCnpj,
     };
 
@@ -61,6 +61,7 @@ export class WarrantyController {
       ownerEmail: registerDeviceDto.ownerEmail,
       ownerPhone: registerDeviceDto.ownerPhone,
       photos: registerDeviceDto.photos,
+      termsOfUseBase64: registerDeviceDto?.termsPdfBase64,
     };
 
 

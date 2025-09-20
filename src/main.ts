@@ -1,9 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter({ logger: true, bodyLimit: 50 * 1024 * 1024 }),
+  );
 
   // Enable global validation
   app.useGlobalPipes(
@@ -14,10 +21,25 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS for frontend integration
   app.enableCors({
-    origin: process.env.FRONTEND_URL || true,
+    origin: function(origin, callback) {
+      // Lista de origins permitidos
+      const allowedOrigins = [
+        'http://localhost:5173',
+        'https://garantias.usestarshield.com'
+      ];
+
+      // Permite se não há origin (Postman, apps móveis) ou se está na lista
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        // callback(new Error('Not allowed by CORS', ));
+      }
+    },
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
     credentials: true,
+    optionsSuccessStatus: 204,
   });
 
   await app.listen(process.env.PORT ?? 3000, '0.0.0.0');

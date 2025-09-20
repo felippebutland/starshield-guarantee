@@ -17,7 +17,8 @@ const testDeviceRegistration = async () => {
     photos: [
       'https://example.com/device-photo1.jpg',
       'https://example.com/device-photo2.jpg'
-    ]
+    ],
+    termsOfUseBase64: 'ZGVjbGFybyBxdWUgYWNlaXRvcyBvcyB0ZXJtb3MgZGUgdXNvIGRvIHNlcnZpw6dvLiA=' // "declaro que aceitos os termos de uso do serviço."
   };
 
   try {

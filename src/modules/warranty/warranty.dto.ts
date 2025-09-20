@@ -29,10 +29,6 @@ export class ValidateWarrantyDto {
 
   @IsString()
   @IsNotEmpty()
-  model: string;
-
-  @IsString()
-  @IsNotEmpty()
   ownerCpfCnpj: string;
 }
 
@@ -77,4 +73,8 @@ export class RegisterDeviceDto {
   @IsString({ each: true })
   @IsNotEmpty({ each: true })
   photos: string[];
+
+  // Base64-encoded Terms of Use content
+  @IsString()
+  termsPdfBase64: string;
 }

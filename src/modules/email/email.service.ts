@@ -9,6 +9,7 @@ export interface DeviceRegistrationEmailData {
   deviceBrand: string;
   imei: string;
   registrationDate: Date;
+  policyNumber: string;
 }
 
 @Injectable()
@@ -20,6 +21,49 @@ export class EmailService {
     this.resend = new Resend(this.configService.get('RESEND_API_KEY'));
   }
 
+  async sendClaimSupportEmail(data: {
+    cpf: string;
+    imei: string;
+    status: string;
+    modelo: string;
+    marca: string;
+    fiscalNumber: string;
+    warrantyId: string;
+    policyNumber?: string;
+  }): Promise<boolean> {
+    try {
+      const html = `
+        <h2>Novo acionamento de garantia</h2>
+        <p>Foi solicitado um atendimento para a garantia abaixo:</p>
+        <ul>
+          <li><strong>CPF/CNPJ:</strong> ${data.cpf}</li>
+          <li><strong>IMEI:</strong> ${data.imei}</li>
+          <li><strong>Status da Garantia:</strong> ${data.status}</li>
+          <li><strong>Modelo:</strong> ${data.marca} ${data.modelo}</li>
+          <li><strong>Número da NF:</strong> ${data.fiscalNumber}</li>
+          <li><strong>Warranty ID:</strong> ${data.warrantyId}</li>
+          ${data.policyNumber ? `<li><strong>Nº da Apólice:</strong> ${data.policyNumber}</li>` : ''}
+        </ul>
+      `;
+
+      await this.resend.emails.send({
+        from: this.configService.get(
+          'RESEND_FROM_EMAIL',
+          'StarShield <send@garantias.usestarshield.com>',
+        ),
+        to: ['atendimento@usestarshield.com'],
+        subject: 'Novo acionamento de garantia - StarShield',
+        html,
+      });
+
+      this.logger.log('Support claim email sent to atendimento@usestarshield.com');
+      return true;
+    } catch (error) {
+      this.logger.error('Failed to send support claim email', error);
+      return false;
+    }
+  }
+
   async sendDeviceRegistrationEmail(
     data: DeviceRegistrationEmailData,
   ): Promise<boolean> {
@@ -29,7 +73,7 @@ export class EmailService {
       const result = await this.resend.emails.send({
         from: this.configService.get(
           'RESEND_FROM_EMAIL',
-          'Acme <onboarding@resend.dev>',
+          'StarShield <send@garantias.usestarshield.com>',
         ),
         to: [data.ownerEmail],
         subject: 'Dispositivo Registrado com Sucesso - StarShield Garantias',
@@ -83,6 +127,7 @@ export class EmailService {
                 <li><strong>Modelo:</strong> ${data.deviceBrand} ${data.deviceModel}</li>
                 <li><strong>IMEI:</strong> ${data.imei}</li>
                 <li><strong>Data de Registro:</strong> ${data.registrationDate.toLocaleDateString('pt-BR')}</li>
+                <li><strong>Politica de garantia:</strong> ${data.policyNumber}</li>
               </ul>
             </div>
             
@@ -98,7 +143,6 @@ export class EmailService {
               <li>Acesse nosso portal de garantias</li>
               <li>Vá para a seção "Acionar Sinistro"</li>
               <li>Informe os dados do seu dispositivo</li>
-              <li>Descreva o problema e anexe fotos</li>
               <li>Aguarde o processamento do seu pedido</li>
             </ol>
             

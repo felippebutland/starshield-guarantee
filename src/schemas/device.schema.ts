@@ -44,6 +44,10 @@ export class Device {
   })
   photos: string[];
 
+  // Base64-encoded Terms of Use accepted/attached during registration
+  @Prop({ required: true })
+  termsOfUseBase64: string;
+
   @Prop({ default: true })
   isActive: boolean;
 }

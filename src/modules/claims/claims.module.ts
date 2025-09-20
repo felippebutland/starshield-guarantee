@@ -6,6 +6,7 @@ import { Device, DeviceSchema } from '../../schemas/device.schema';
 import { Warranty, WarrantySchema } from '../../schemas/warranty.schema';
 import { Claim, ClaimSchema } from '../../schemas/claim.schema';
 import { AuditLog, AuditLogSchema } from '../../schemas/audit-log.schema';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuditLog, AuditLogSchema } from '../../schemas/audit-log.schema';
       { name: Claim.name, schema: ClaimSchema },
       { name: AuditLog.name, schema: AuditLogSchema },
     ]),
+    EmailModule,
   ],
   controllers: [ClaimsController],
   providers: [ClaimsService],
