@@ -18,42 +18,6 @@ services:
     networks:
       - starshield-network
 
-  # NestJS Application Service
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: starshield-app
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      # Database Configuration
-      DATABASE_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/${MONGO_DB_NAME:-starshield-guarantee}?authSource=admin
-
-      # Application Configuration
-      PORT: 3000
-      NODE_ENV: ${NODE_ENV:-production}
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
-
-      # Gmail API Configuration (Optional)
-      GMAIL_CLIENT_ID: ${GMAIL_CLIENT_ID:-}
-      GMAIL_CLIENT_SECRET: ${GMAIL_CLIENT_SECRET:-}
-      GMAIL_REFRESH_TOKEN: ${GMAIL_REFRESH_TOKEN:-}
-      GMAIL_USER: ${GMAIL_USER:-}
-
-      # SMTP Fallback Configuration (Optional)
-      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
-      SMTP_PORT: ${SMTP_PORT:-587}
-      SMTP_USER: ${SMTP_USER:-}
-      SMTP_PASS: ${SMTP_PASS:-}
-    depends_on:
-      - mongodb
-    networks:
-      - starshield-network
-    volumes:
-      - ./logs:/app/logs
-
 # Named Volumes
 volumes:
   mongodb_data:
