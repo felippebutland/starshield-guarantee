@@ -12,7 +12,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-starshield-guarantee}
     volumes:
-      - mongodb_/data/db
+      - mongodb_data:/data/db
       - mongodb_config:/data/configdb
     networks:
       - starshield-network
@@ -45,8 +45,10 @@ services:
       - starshield-network
 
 volumes:
-  mongodb_:
+  mongodb_data:
+    driver: local
   mongodb_config:
+    driver: local
 
 networks:
   starshield-network:
