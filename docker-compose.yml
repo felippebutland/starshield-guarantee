@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # MongoDB Database Service
   mongodb:
     image: mongo:7.0
     container_name: starshield-mongodb
@@ -13,19 +12,42 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password123}
       MONGO_INITDB_DATABASE: ${MONGO_DB_NAME:-starshield-guarantee}
     volumes:
-      - mongodb_data:/data/db
+      - mongodb_/data/db
       - mongodb_config:/data/configdb
     networks:
       - starshield-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
-# Named Volumes
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: starshield-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-password123}@mongodb:27017/${MONGO_DB_NAME:-starshield-guarantee}?authSource=admin
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      FRONTEND_URL: ${FRONTEND_URL}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - starshield-network
+
 volumes:
-  mongodb_data:
-    driver: local
+  mongodb_:
   mongodb_config:
-    driver: local
 
-# Networks
 networks:
   starshield-network:
     driver: bridge
