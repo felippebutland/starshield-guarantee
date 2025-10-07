@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mongodb:
-    image: mongo:7.0
+    image: l33tlamer/mongodb-without-avx:5.0.20
     container_name: starshield-mongodb
     restart: unless-stopped
     ports:
