@@ -32,9 +32,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       RESEND_API_KEY: ${RESEND_API_KEY}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
-    depends_on:
-      mongodb:
-        condition: service_healthy
     networks:
       - starshield-network
 
